@@ -96,6 +96,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   margin: 14px 0; min-height: 76px;
 }
 .say p { flex: 1; margin: 0; font-size: 23px; line-height: 1.25; font-weight: 600; }
+.say p.long { font-size: 19px; }
 .controls { display: flex; gap: 12px; }
 .btn {
   height: 72px; border-radius: 22px; font-size: 24px; font-weight: 800;
@@ -115,6 +116,24 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .thumb .ink { stroke-width: 7; }
 .old .ink { stroke: #b9b2c2; }
 .old .ink.fill { fill: #b9b2c2; }
+.old .shade { fill: #b9b2c2; }
+.ink.tone { stroke: #7d7788; }
+.now .ink.tone { stroke: var(--now); }
+.ink.white { fill: #fff; stroke: none; }
+.guide { fill: none; stroke: #c9c2d2; stroke-width: 2.5; stroke-linecap: round; }
+.now .guide { stroke: var(--now); stroke-width: 3; }
+.shade { stroke: none; fill: #2d2a32; fill-rule: evenodd; }
+.shade.s1 { fill-opacity: .12; }
+.shade.s2 { fill-opacity: .26; }
+.shade.s3 { fill-opacity: .55; }
+.now .shade { fill: var(--now); }
+
+.section { font-size: 24px; margin: 28px 4px 0; }
+.section + .note { margin-top: 2px; }
+.tile .hint { font-size: 14px; color: var(--soft); text-align: center; }
+.tile.locked .teaser { position: relative; width: 100%; }
+.tile.locked .teaser svg { opacity: .35; }
+.tile.locked .teaser span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 40px; }
 
 /* ---------- done ---------- */
 .done-screen { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }

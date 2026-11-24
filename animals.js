@@ -291,3 +291,168 @@ const ANIMALS = [
     },
   },
 ];
+
+/* =====================================================================
+   MASTER DRAWINGS ✨ — realistic versions, drawn like real artists do:
+   light guide shapes → outline → details → erase guides → shading.
+   Extra shape options:
+     g: 1        light guide line (disappears after the "erase" step)
+     sh: 1|2|3   pencil shading (light, medium, dark), no outline
+     w: n        line thickness (thin lines for fur and details)
+     t: 1        softer grey line
+     f: 'w'      white shine
+   ===================================================================== */
+
+/** Rows of little U-shaped feather marks inside an oval. */
+function featherMarks(cx, cy, rx, ry, gap = 20, size = 9) {
+  let d = '';
+  for (let row = 0, y = cy - ry; y <= cy + ry; y += gap * 0.8, row++) {
+    for (let x = cx - rx + (row % 2 ? gap / 2 : 0); x <= cx + rx; x += gap) {
+      if (((x + size / 2 - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 > 0.9) continue;
+      d += `M${x.toFixed(1)} ${y.toFixed(1)}q${size / 2} ${size * 0.6} ${size} 0`;
+    }
+  }
+  return { d, w: 2.5 };
+}
+/** Short fur strokes pointing outward around an oval, between two angles (degrees, 0 = right, 90 = down). */
+function ringStrokes(cx, cy, rx, ry, from, to, n, len, w = 2.5) {
+  let d = '';
+  for (let i = 0; i < n; i++) {
+    const a = (from + (to - from) * i / (n - 1)) * Math.PI / 180;
+    const x = cx + rx * Math.cos(a), y = cy + ry * Math.sin(a);
+    d += `M${x.toFixed(1)} ${y.toFixed(1)}l${(len * Math.cos(a)).toFixed(1)} ${(len * Math.sin(a)).toFixed(1)}`;
+  }
+  return { d, w, t: 1 };
+}
+/** Short strokes from a list of [x, y, dx, dy]. */
+const strokes = (list, w = 2.5) => ({ d: list.map(([x, y, dx, dy]) => `M${x} ${y}l${dx} ${dy}`).join(''), w, t: 1 });
+
+const MASTER = {
+  /* ------------------------------------------------------------ OWL ✨ */
+  owl: { view: '0 40 400 390', steps: [
+    { say: 'Artist trick: press very lightly with your pencil! Sketch a circle for the head, a big oval for the body and a line down the middle.',
+      s: [{ g: 1, c: [200, 140, 75] }, { g: 1, e: [200, 280, 92, 105] }, { g: 1, d: 'M200 55L200 395' }] },
+    { say: 'Now draw the owl’s outline around your guides: a round head that flows into a big round body.',
+      s: [{ d: 'M128 160C122 95 165 62 200 62C235 62 278 95 272 160C292 205 300 270 285 320C272 360 240 378 200 380C160 378 128 360 115 320C100 270 108 205 128 160Z' }] },
+    { say: 'Draw the face: a big heart shape in the middle of the head.',
+      s: [{ d: 'M200 92C175 78 130 92 135 140C138 180 170 200 200 212C230 200 262 180 265 140C270 92 225 78 200 92Z' }] },
+    { say: 'Draw two big round eyes, one on each side of the middle line.',
+      s: [{ c: [170, 138, 22] }, { c: [230, 138, 22] }] },
+    { say: 'Fill in the big pupils, but leave a tiny white spot for the shine. That makes the eyes look alive!',
+      s: [{ c: [172, 140, 13], f: 1 }, { c: [228, 140, 13], f: 1 }, { c: [177, 134, 4], f: 'w' }, { c: [233, 134, 4], f: 'w' }] },
+    { say: 'Add the curved eyebrow feathers and a small pointy beak between the eyes.',
+      s: [{ d: 'M196 120C185 106 162 104 143 112M204 120C215 106 238 104 257 112', w: 4 }, { d: 'M200 152C192 160 194 174 200 184C206 174 208 160 200 152Z' }] },
+    { say: 'Draw the folded wings on both sides of the body.',
+      s: [{ d: 'M135 205C115 255 118 325 148 372C160 330 165 270 150 225C146 214 140 207 135 205Z' }, { d: 'M265 205C285 255 282 325 252 372C240 330 235 270 250 225C254 214 260 207 265 205Z' }] },
+    { say: 'Now gently erase your light guide lines.', erase: 1, s: [] },
+    { say: 'Draw curved stripes across the wings to show the long feathers.',
+      s: [{ d: 'M124 262Q140 256 155 264M124 292Q140 286 158 294M130 322Q143 316 157 324M140 350Q148 345 156 350M276 262Q260 256 245 264M276 292Q260 286 242 294M270 322Q257 316 243 324M260 350Q252 345 244 350', w: 4 }] },
+    { say: 'Cover the tummy with lots of little U-shaped feather marks.',
+      s: [featherMarks(200, 292, 44, 62, 19, 9)] },
+    { say: 'Add small fluffy lines all around the edge of the face.',
+      s: [ringStrokes(200, 150, 72, 68, 215, 325, 16, 7)] },
+    { say: 'Draw the feet holding the branch, and the branch under them.',
+      s: [{ d: 'M182 377C178 384 176 390 178 396M192 379C191 386 191 392 192 398M208 379C209 386 209 392 208 398M218 377C222 384 224 390 222 396', w: 5 },
+        { d: 'M30 394C120 388 260 392 380 386M30 416C120 412 260 414 380 408' }, { d: 'M60 402l25 2M250 400l35-1M320 397l22 0', w: 2.5, t: 1 }] },
+    { say: 'Shading time! Shade the wings softly. Press a little harder than before.',
+      s: [{ sh: 2, d: 'M135 205C115 255 118 325 148 372C160 330 165 270 150 225C146 214 140 207 135 205Z' }, { sh: 2, d: 'M265 205C285 255 282 325 252 372C240 330 235 270 250 225C254 214 260 207 265 205Z' }] },
+    { say: 'Now shade very lightly around the head and the sides of the body. Keep the face and the tummy white!',
+      s: [{ sh: 1, d: 'M128 160C122 95 165 62 200 62C235 62 278 95 272 160C292 205 300 270 285 320C272 360 240 378 200 380C160 378 128 360 115 320C100 270 108 205 128 160ZM200 92C175 78 130 92 135 140C138 180 170 200 200 212C230 200 262 180 265 140C270 92 225 78 200 92ZM150 295A50 70 0 1 1 250 295A50 70 0 1 1 150 295Z' },
+        { sh: 1, d: 'M128 160C108 205 100 270 115 320C128 360 160 378 200 380C170 370 150 345 145 300C140 250 140 200 135 170Z' },
+        { sh: 1, d: 'M272 160C292 205 300 270 285 320C272 360 240 378 200 380C230 370 250 345 255 300C260 250 260 200 265 170Z' }] },
+    { say: 'Last step: add the darkest shadows on the beak and the branch. You are a real artist!',
+      s: [{ sh: 3, d: 'M200 152C192 160 194 174 200 184C206 174 208 160 200 152Z' }, { sh: 2, d: 'M30 394C120 388 260 392 380 386L380 408C260 414 120 412 30 416Z' }] },
+  ] },
+
+  /* ------------------------------------------------------------ CAT ✨ */
+  cat: { view: '0 30 400 380', steps: [
+    { say: 'Press very lightly! Sketch a big circle for the head, a cross to help you place the face, and a small oval for the muzzle.',
+      s: [{ g: 1, c: [200, 210, 110] }, { g: 1, d: 'M200 90L200 330M90 195L310 195' }, { g: 1, e: [200, 262, 48, 34] }] },
+    { say: 'Draw the outline of the head: two big pointy ears and wide, round cheeks.',
+      s: [{ d: 'M112 150L100 48C130 62 160 85 175 110C190 106 210 106 225 110C240 85 270 62 300 48L288 150C310 185 318 225 305 262C292 300 250 330 200 334C150 330 108 300 95 262C82 225 90 185 112 150Z' }] },
+    { say: 'Draw the inside of the ears, and a few soft fur lines.',
+      s: [{ d: 'M120 135L112 72C135 88 152 102 163 114' }, { d: 'M280 135L288 72C265 88 248 102 237 114' }, strokes([[118, 124, 14, -9], [116, 110, 14, -5], [116, 96, 12, -1], [282, 124, -14, -9], [284, 110, -14, -5], [284, 96, -12, -1]])] },
+    { say: 'Draw two almond-shaped eyes sitting on the guide line.',
+      s: [{ d: 'M134 195C148 172 184 170 196 191C184 210 148 212 134 195Z' }, { d: 'M266 195C252 172 216 170 204 191C216 210 252 212 266 195Z' }] },
+    { say: 'Inside each eye, draw a round iris and a thin slit pupil. Leave a tiny white shine!',
+      s: [{ e: [166, 192, 15, 14], w: 3 }, { e: [234, 192, 15, 14], w: 3 }, { e: [166, 192, 4.5, 13], f: 1 }, { e: [234, 192, 4.5, 13], f: 1 }, { c: [172, 185, 3.5], f: 'w' }, { c: [240, 185, 3.5], f: 'w' }] },
+    { say: 'Draw the nose: a little upside-down triangle with soft corners, and two lines going up between the eyes.',
+      s: [{ d: 'M186 236L214 236C212 244 205 250 200 252C195 250 188 244 186 236Z' }, { d: 'M190 205C192 218 190 228 186 236M210 205C208 218 210 228 214 236', w: 2.5, t: 1 }] },
+    { say: 'Draw the mouth under the nose, and a small curve for the chin.',
+      s: [{ d: 'M200 252L200 264C194 272 182 274 174 266M200 264C206 272 218 274 226 266' }, { d: 'M184 290C193 297 207 297 216 290', w: 4 }] },
+    { say: 'Now gently erase your light guide lines.', erase: 1, s: [] },
+    { say: 'Add rows of little whisker dots, then long, gently curved whiskers.',
+      s: [{ c: [174, 247, 1.8], f: 1 }, { c: [165, 253, 1.8], f: 1 }, { c: [177, 256, 1.8], f: 1 }, { c: [226, 247, 1.8], f: 1 }, { c: [235, 253, 1.8], f: 1 }, { c: [223, 256, 1.8], f: 1 },
+        { d: 'M160 258C125 248 95 246 55 254M160 266C125 266 95 270 58 284M164 274C130 282 108 294 78 316M240 258C275 248 305 246 345 254M240 266C275 266 305 270 342 284M236 274C270 282 292 294 322 316', w: 2 }] },
+    { say: 'Draw the tabby stripes: an M shape on the forehead and a few stripes on the cheeks.',
+      s: [{ d: 'M176 126C180 145 186 160 192 172M200 118L200 170M224 126C220 145 214 160 208 172M98 206C110 204 122 208 132 215M96 226C108 226 120 230 128 237M302 206C290 204 278 208 268 215M304 226C292 226 280 230 272 237', w: 3.5 }] },
+    { say: 'Draw the neck and some fluffy fur on the chest.',
+      s: [{ d: 'M125 312C115 345 110 375 106 400M275 312C285 345 290 375 294 400' }, strokes([[168, 342, 6, 15], [186, 346, 4, 15], [204, 346, -2, 15], [222, 342, -5, 15], [176, 368, 5, 15], [200, 372, 0, 15], [222, 368, -5, 15], [97, 262, -10, 6], [101, 278, -10, 8], [109, 293, -8, 10], [303, 262, 10, 6], [299, 278, 10, 8], [291, 293, 8, 10]])] },
+    { say: 'Shading time! Shade the inside of the ears and the colored part of the eyes.',
+      s: [{ sh: 2, d: 'M120 135L112 72C135 88 152 102 163 114C150 120 132 128 120 135Z' }, { sh: 2, d: 'M280 135L288 72C265 88 248 102 237 114C250 120 268 128 280 135Z' }, { sh: 1, e: [166, 192, 15, 14] }, { sh: 1, e: [234, 192, 15, 14] }] },
+    { say: 'Shade softly along the sides of the face, and a darker shadow under the chin.',
+      s: [{ sh: 1, d: 'M112 150C90 185 82 225 95 262C108 300 150 330 200 334C160 320 128 290 120 250C114 215 116 180 112 150Z' }, { sh: 1, d: 'M288 150C310 185 318 225 305 262C292 300 250 330 200 334C240 320 272 290 280 250C286 215 284 180 288 150Z' }, { sh: 2, d: 'M140 318C165 332 185 336 200 336C215 336 235 332 260 318C255 340 230 352 200 352C170 352 145 340 140 318Z' }] },
+    { say: 'Last step: shade the nose dark, and darken the stripes a little. Beautiful!',
+      s: [{ sh: 3, d: 'M186 236L214 236C212 244 205 250 200 252C195 250 188 244 186 236Z' }, { sh: 1, d: 'M176 126C180 145 186 160 192 172L200 170L200 118L208 172L214 160L224 126C215 120 185 120 176 126Z' }] },
+  ] },
+
+  /* ---------------------------------------------------------- BUNNY ✨ */
+  bunny: { view: '20 0 380 380', steps: [
+    { say: 'Press lightly! Sketch a circle for the head, a big oval for the body, and a smaller circle for the back leg.',
+      s: [{ g: 1, c: [140, 148, 50] }, { g: 1, e: [240, 268, 110, 88] }, { g: 1, c: [288, 295, 58] }] },
+    { say: 'Draw the head from the side: a round forehead and a soft nose pointing left, then the cheek.',
+      s: [{ d: 'M155 101C128 98 104 114 96 138C91 150 86 159 88 168C90 178 100 184 110 190C128 202 152 200 168 186' }] },
+    { say: 'Draw two long ears going back. The one behind is a little hidden.',
+      s: [{ d: 'M150 102C148 60 165 20 196 12C214 8 214 32 204 56C194 80 182 100 175 112' }, { d: 'M184 104C196 74 216 46 240 38C254 36 248 58 232 74C216 90 202 104 192 118' }] },
+    { say: 'Draw the long curved back, all the way down to the ground.',
+      s: [{ d: 'M190 120C232 145 300 168 335 230C360 275 350 330 320 350' }] },
+    { say: 'Draw the chest going down from the cheek, and the front paw on the ground.',
+      s: [{ d: 'M118 196C122 225 132 250 140 275C146 300 146 325 150 345C140 352 116 356 108 350C104 344 116 338 140 338' }, { d: 'M160 300C162 320 164 336 170 348' }] },
+    { say: 'Draw the big back foot along the ground, and the round thigh.',
+      s: [{ d: 'M170 348C185 352 195 354 206 352C204 344 214 340 232 340L318 344C328 352 320 360 300 360L210 360C206 359 205 356 206 352' }, { d: 'M262 340C242 312 242 268 272 246C300 228 330 250 336 282' }] },
+    { say: 'Add a fluffy round tail.',
+      s: [{ d: 'M348 290C366 282 380 300 372 314C366 324 354 322 348 312' }] },
+    { say: 'Draw the eye: a dark oval with a white shine, and a curved line above it.',
+      s: [{ e: [132, 138, 8, 10], f: 1 }, { c: [129, 134, 3], f: 'w' }, { d: 'M119 134C124 122 140 122 145 134', w: 3 }] },
+    { say: 'Draw the little nose, the mouth and long thin whiskers.',
+      s: [{ d: 'M89 160C93 157 97 159 96 164M92 172C96 177 101 177 104 172', w: 3.5 }, { d: 'M94 165C72 158 52 160 36 167M95 169C74 172 56 180 44 191M97 162C82 148 72 138 58 130', w: 1.8 }] },
+    { say: 'Now gently erase your light guide lines.', erase: 1, s: [] },
+    { say: 'Draw short fur lines on the chest, the thigh and the fluffy tail.',
+      s: [strokes([[126, 214, 7, 6], [132, 236, 7, 6], [138, 258, 7, 6], [142, 282, 7, 5], [256, 280, 8, -4], [252, 302, 8, -2], [256, 322, 8, 0], [360, 296, 6, -3], [364, 308, 7, 0]])] },
+    { say: 'Shading time! Shade the inside of the ear, and softly under the back.',
+      s: [{ sh: 2, d: 'M157 100C158 66 172 30 196 22C206 22 204 40 198 56C190 76 180 92 172 104Z' },
+        { sh: 1, d: 'M190 120C232 145 300 168 335 230C360 275 350 330 320 350L300 350C322 320 322 270 300 240C270 200 225 170 192 140Z' }] },
+    { say: 'Shade a bit darker under the thigh and under the head, and lightly on the ear behind.',
+      s: [{ sh: 2, d: 'M262 340C242 312 242 268 272 246C255 282 258 318 278 344Z' }, { sh: 2, d: 'M118 196C130 205 152 200 168 186C165 205 145 215 125 214Z' }, { sh: 1, d: 'M184 104C196 74 216 46 240 38C254 36 248 58 232 74C216 90 202 104 192 118Z' }] },
+    { say: 'Last step: draw a soft shadow on the ground under your bunny. Lovely!',
+      s: [{ sh: 1, e: [225, 364, 150, 9] }, { d: 'M70 364l-3-10M75 364l2-12M80 364l5-9M345 364l-3-10M350 364l2-12M355 364l5-9', w: 2.5, t: 1 }] },
+  ] },
+
+  /* -------------------------------------------------------- PENGUIN ✨ */
+  penguin: { view: '30 40 340 410', steps: [
+    { say: 'Press lightly! Sketch a small circle for the head and a tall oval for the body. This is an emperor penguin, the biggest one!',
+      s: [{ g: 1, c: [205, 95, 38] }, { g: 1, e: [208, 270, 85, 150] }] },
+    { say: 'Draw the head and a long, thin beak pointing to the right.',
+      s: [{ d: 'M172 110C165 80 180 58 205 58C228 58 240 75 238 95C255 98 280 108 296 118C278 120 255 118 236 116C230 128 226 135 228 145' }] },
+    { say: 'Draw the back: a long curve from the head down to the feet.',
+      s: [{ d: 'M172 110C160 140 140 190 130 250C120 320 128 380 150 420' }] },
+    { say: 'Draw the round tummy in front, bulging out like a big balloon.',
+      s: [{ d: 'M228 145C255 180 285 240 288 300C290 360 270 400 240 420' }] },
+    { say: 'Draw the feet, a small tail, and the flipper hanging down on the side.',
+      s: [{ d: 'M150 420C165 430 200 434 214 424C224 434 256 434 262 424C256 416 246 416 240 420', w: 5 }, { d: 'M150 420L130 438L162 428' }, { d: 'M160 170C140 230 130 300 140 360C150 340 165 280 172 220C175 195 170 178 160 170Z' }] },
+    { say: 'Draw the line where the black back meets the white tummy, and the ear patch behind the eye.',
+      s: [{ d: 'M232 150C215 190 200 250 205 320C208 370 220 405 240 420', w: 3.5 }, { d: 'M200 100C210 110 222 125 228 145C218 140 205 125 198 112Z', w: 3.5 }] },
+    { say: 'Draw a small eye with a white shine, and a stripe along the beak.',
+      s: [{ c: [212, 86, 5], f: 1 }, { c: [213.5, 84.5, 1.8], f: 'w' }, { d: 'M240 111C255 112 270 114 285 117', w: 2.5, t: 1 }] },
+    { say: 'Now gently erase your light guide lines.', erase: 1, s: [] },
+    { say: 'Shading time! Shade the head and the back very dark. Go around the ear patch and keep it light!',
+      s: [{ sh: 3, d: 'M172 110C165 80 180 58 205 58C228 58 240 75 238 95C237 105 236 110 236 116C230 128 226 135 228 145L232 150C215 190 200 250 205 320C208 370 220 405 240 420L150 420C128 380 120 320 130 250C140 190 160 140 172 110ZM200 100C210 110 222 125 228 145C218 140 205 125 198 112Z' }] },
+    { say: 'Shade the beak and the flipper a little more, so they stand out.',
+      s: [{ sh: 2, d: 'M238 95C255 98 280 108 296 118C278 120 255 118 236 116Z' }, { sh: 2, d: 'M160 170C140 230 130 300 140 360C150 340 165 280 172 220C175 195 170 178 160 170Z' }] },
+    { say: 'Shade softly: the ear patch, the top of the chest, and a light shadow along the tummy edge.',
+      s: [{ sh: 1, d: 'M200 100C210 110 222 125 228 145C218 140 205 125 198 112Z' }, { sh: 1, d: 'M228 145C242 162 252 180 258 198C240 190 230 172 224 156Z' }, { sh: 1, d: 'M232 150C215 190 200 250 205 320C208 370 220 405 240 420C228 380 222 330 226 270C228 220 238 180 232 150Z' }] },
+    { say: 'Draw tiny feather marks on the tummy, then the ice and a shadow on the ground. Amazing work!',
+      s: [{ d: 'M240 230q4 4 8 0M258 262q4 4 8 0M236 290q4 4 8 0M262 320q4 4 8 0M240 352q4 4 8 0M258 384q4 4 8 0', w: 2, t: 1 }, { sh: 1, e: [205, 432, 100, 7] }, { d: 'M50 438L360 438' }] },
+  ] },
+};
+for (const [id, level] of Object.entries(MASTER)) ANIMALS.find(a => a.id === id).levels.pro = level;

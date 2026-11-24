@@ -51,17 +51,37 @@
     }
     return '';
   }
-  const shapeEl = s => `<path class="ink${s.f ? ' fill' : ''}" d="${toPath(s)}"/>`;
+  function shapeEl(s) {
+    let cls = 'ink';
+    if (s.g) cls = 'guide';                       // light construction line
+    else if (s.sh) cls = 'shade s' + s.sh;        // pencil shading, 1 light … 3 dark
+    else {
+      if (s.f === 'w') cls += ' white';           // white shine in eyes
+      else if (s.f) cls += ' fill';
+      if (s.t) cls += ' tone';                    // softer grey line (fur, texture)
+    }
+    const style = s.w ? ` style="stroke-width:${s.w}"` : '';
+    return `<path class="${cls}" d="${toPath(s)}"${style}/>`;
+  }
 
-  /** SVG of a level's steps [0..upto]; the step at `now` is highlighted. */
+  /** SVG of a level's steps [0..upto]; the step at `now` is highlighted.
+      Layers: guides at the back, then shading, then lines on top. */
   function drawingSVG(level, upto, now = -1, cls = '') {
     const vb = level.view || '0 0 400 400';
-    let g = '';
+    const eraseAt = level.steps.findIndex(st => st.erase);
+    const hideGuides = eraseAt >= 0 && upto >= eraseAt;
+    const layers = { g: '', sh: '', ink: '' };
     level.steps.forEach((st, i) => {
       if (i > upto) return;
-      g += `<g class="${i === now ? 'now' : ''}">${st.s.map(shapeEl).join('')}</g>`;
+      const parts = { g: '', sh: '', ink: '' };
+      (st.s || []).forEach(s => {
+        const k = s.g ? 'g' : s.sh ? 'sh' : 'ink';
+        if (k === 'g' && hideGuides) return;
+        parts[k] += shapeEl(s);
+      });
+      for (const k in parts) if (parts[k]) layers[k] += `<g class="${i === now ? 'now' : ''}">${parts[k]}</g>`;
     });
-    return `<svg class="${cls}" viewBox="${vb}" preserveAspectRatio="xMidYMid meet">${g}</svg>`;
+    return `<svg class="${cls}" viewBox="${vb}" preserveAspectRatio="xMidYMid meet">${layers.g}${layers.sh}${layers.ink}</svg>`;
   }
 
   /** Animates the strokes of the highlighted step, one shape after another. */
@@ -69,6 +89,11 @@
     const paths = [...root.querySelectorAll('.now path')];
     let delay = 250;
     paths.forEach(p => {
+      if (p.classList.contains('shade') || p.classList.contains('white')) {
+        p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 900, delay, fill: 'both' });
+        delay += 600;
+        return;
+      }
       const len = p.getTotalLength();
       const dur = Math.min(1800, Math.max(500, len * 3.2));
       p.style.strokeDasharray = `${len} ${len}`;
@@ -114,7 +139,7 @@
             <span class="avatar" style="background:${p.color}">${p.avatar}</span>
             <span>
               <div class="name">${esc(p.name)}</div>
-              <div class="meta">⭐ ${p.done.length} of ${ANIMALS.length} animals · ${LEVELS[p.level]}</div>
+              <div class="meta">⭐ ${regularDone(p)} of ${ANIMALS.length} animals · ${LEVELS[p.level]}</div>
             </span>
           </button>`).join('')}
       </div>
@@ -147,17 +172,48 @@
               <div class="label">${a.emoji} ${a.name}</div>
             </button>`;
         }).join('')}
-      </div>`;
+      </div>
+      ${showMaster(p) ? masterSection(p) : ''}`;
     app.querySelector('[data-act=home]').onclick = () => go({ screen: 'home' });
     app.querySelectorAll('[data-i]').forEach(b => b.onclick = () =>
       go({ screen: 'draw', pid: p.id, ai: +b.dataset.i, step: 0 }));
+    app.querySelectorAll('[data-m]').forEach(b => b.onclick = () =>
+      go({ screen: 'draw', pid: p.id, ai: +b.dataset.m, step: 0, lv: 'pro' }));
+  }
+
+  /* Master drawings: a realistic version, unlocked once the normal animal is done. */
+  const showMaster = p => p.master ?? p.level === 'hard';
+  const regularDone = p => p.done.filter(d => !d.includes(':')).length;
+  function masterSection(p) {
+    return `
+      <h2 class="section">✨ Master drawings</h2>
+      <p class="note">Like real artists: light guide lines, small details and pencil shading.</p>
+      <div class="grid">
+        ${ANIMALS.map((a, i) => {
+          if (!a.levels.pro) return '';
+          const lvl = a.levels.pro;
+          if (!p.done.includes(a.id)) {
+            return `<div class="tile locked"><div class="teaser">${drawingSVG(lvl, 99, -1, 'thumb')}<span>🔒</span></div>
+              <div class="hint">Draw the ${a.name} first</div></div>`;
+          }
+          const done = p.done.includes(a.id + ':pro');
+          return `
+            <button class="tile" data-m="${i}">
+              ${done ? '<span class="badge star">⭐</span>' : '<span class="badge">NEW</span>'}
+              ${drawingSVG(lvl, 99, -1, 'thumb')}
+              <div class="label">✨ ${a.name}</div>
+            </button>`;
+        }).join('')}
+      </div>`;
   }
 
   function renderDraw() {
     keepAwake(true);
     const p = profile(view.pid);
     const a = ANIMALS[view.ai];
-    const lvl = a.levels[p.level];
+    const pro = view.lv === 'pro';
+    const lvl = a.levels[pro ? 'pro' : p.level];
+    const doneId = pro ? a.id + ':pro' : a.id;
     const n = lvl.steps.length;
     const st = lvl.steps[view.step];
     const last = view.step === n - 1;
@@ -165,14 +221,14 @@
       <div class="draw">
         <div class="bar">
           <button class="icon-btn" data-act="zoo" aria-label="Close">✕</button>
-          <h1>${a.emoji} ${a.name}</h1>
+          <h1>${pro ? '✨' : a.emoji} ${a.name}</h1>
           <span class="spacer"></span>
         </div>
         <div class="progress">${lvl.steps.map((_, i) =>
           `<i class="${i < view.step ? 'done' : i === view.step ? 'now' : ''}"></i>`).join('')}</div>
         <div class="canvas">${drawingSVG(lvl, view.step, view.step)}</div>
         <div class="say">
-          <p>${esc(st.say)}</p>
+          <p class="${st.say.length > 90 ? 'long' : ''}">${esc(st.say)}</p>
           <button class="icon-btn" data-act="speak" aria-label="Read aloud">🔊</button>
         </div>
         <div class="controls">
@@ -193,9 +249,9 @@
     };
     app.querySelector('[data-act=next]').onclick = () => {
       if (!last) return go({ ...view, step: view.step + 1 });
-      const firstTime = !p.done.includes(a.id);
-      if (firstTime) { p.done.push(a.id); save(); }
-      go({ screen: 'done', pid: p.id, ai: view.ai, firstTime });
+      const firstTime = !p.done.includes(doneId);
+      if (firstTime) { p.done.push(doneId); save(); }
+      go({ screen: 'done', pid: p.id, ai: view.ai, firstTime, lv: view.lv });
     };
   }
 
@@ -203,16 +259,19 @@
     keepAwake(false);
     const p = profile(view.pid);
     const a = ANIMALS[view.ai];
-    const lvl = a.levels[p.level];
+    const pro = view.lv === 'pro';
+    const lvl = a.levels[pro ? 'pro' : p.level];
     const nextA = ANIMALS[view.ai + 1];
-    const unlocked = view.firstTime && nextA;
+    const unlocked = view.firstTime && !pro && nextA;
+    const masterNew = view.firstTime && !pro && a.levels.pro && showMaster(p);
     app.innerHTML = `
       <div class="done-screen">
         <div class="stars">⭐⭐⭐</div>
         <h2>You drew a ${a.name}!</h2>
-        <p>Now color it in on your paper 🖍️</p>
+        <p>${pro ? 'What a real work of art! 🖼️' : 'Now color it in on your paper 🖍️'}</p>
         <div class="canvas">${drawingSVG(lvl, 99)}</div>
         ${unlocked ? `<p style="margin-top:14px">🎁 A new animal is waiting in your zoo!</p>` : ''}
+        ${masterNew ? `<p>✨ The Master ${a.name} is now open too!</p>` : ''}
         <div class="controls">
           <button class="btn primary go" data-act="zoo">Back to my zoo</button>
         </div>
@@ -284,7 +343,13 @@
                 <button data-speak="0" class="${!p.speak ? 'on' : ''}">Off</button>
               </div>
             </div>
-            <div class="row">Progress: ${p.done.length} / ${ANIMALS.length}
+            <div class="row">Master drawings ✨
+              <div class="seg">
+                <button data-master="1" class="${showMaster(p) ? 'on' : ''}">Show</button>
+                <button data-master="0" class="${!showMaster(p) ? 'on' : ''}">Hide</button>
+              </div>
+            </div>
+            <div class="row">Progress: ${regularDone(p)} / ${ANIMALS.length}
               <span>
                 <button class="small-btn" data-act="unlock">Unlock all</button>
                 <button class="small-btn danger" data-act="reset">Reset</button>
@@ -300,6 +365,7 @@
       const p = profile(panel.dataset.p);
       panel.querySelector('.name-input').onchange = e => { p.name = e.target.value.trim() || p.name; save(); };
       panel.querySelectorAll('[data-level]').forEach(b => b.onclick = () => { p.level = b.dataset.level; save(); render(); });
+      panel.querySelectorAll('[data-master]').forEach(b => b.onclick = () => { p.master = b.dataset.master === '1'; save(); render(); });
       panel.querySelectorAll('[data-speak]').forEach(b => b.onclick = () => { p.speak = b.dataset.speak === '1'; save(); render(); });
       panel.querySelector('[data-act=unlock]').onclick = () => {
         if (confirm(`Mark all animals as done for ${p.name}?`)) { p.done = ANIMALS.map(a => a.id); save(); render(); }
@@ -313,8 +379,10 @@
   /** Developer sheet: every animal, every level, finished. Open with #debug */
   function renderDebug() {
     app.style.maxWidth = 'none';
-    app.innerHTML = `<div class="debug">${ANIMALS.flatMap(a => Object.entries(a.levels).map(([k, l]) =>
-      `<figure>${drawingSVG(l, 99, l.steps.length - 1)}<figcaption>${a.name} · ${k} · ${l.steps.length} steps</figcaption></figure>`)).join('')}</div>`;
+    const only = location.hash.split(':')[1]; // #debug:owl shows one animal, big
+    app.innerHTML = `<div class="debug" ${only ? 'style="grid-template-columns:1fr"' : ''}>${ANIMALS.filter(a => !only || a.id === only)
+      .flatMap(a => Object.entries(a.levels).map(([k, l]) =>
+      `<figure>${drawingSVG(l, 99)}<figcaption>${a.name} · ${k} · ${l.steps.length} steps</figcaption></figure>`)).join('')}</div>`;
   }
 
   function confetti() {
@@ -336,7 +404,7 @@
   function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
   function render() {
-    if (location.hash === '#debug') return renderDebug();
+    if (location.hash.startsWith('#debug')) return renderDebug();
     if (!state.setup) return renderSetup();
     ({ home: renderHome, zoo: renderZoo, draw: renderDraw, done: renderDone, settings: renderSettings })[view.screen]();
   }
