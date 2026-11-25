@@ -1,6 +1,6 @@
 // Offline cache: once opened over https, the app works without internet.
 // Bump VERSION whenever files change so phones pick up the new version.
-const VERSION = 'doodle-zoo-2';
+const VERSION = 'doodle-zoo-3';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'animals.js', 'manifest.webmanifest', 'icon-180.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

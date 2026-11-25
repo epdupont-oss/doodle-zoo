@@ -456,3 +456,122 @@ const MASTER = {
   ] },
 };
 for (const [id, level] of Object.entries(MASTER)) ANIMALS.find(a => a.id === id).levels.pro = level;
+
+/* =====================================================================
+   NEW: drawings made for one level only.
+   Every child can still choose them; they always use this level.
+   ===================================================================== */
+const star = (cx, cy, r) => {
+  let d = '';
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r;
+    d += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(1) + ' ' + (cy + rr * Math.sin(a)).toFixed(1);
+  }
+  return { d: d + 'Z' };
+};
+const sunRays = (cx, cy, r1, r2, n = 8) => ({
+  d: Array.from({ length: n }, (_, i) => {
+    const a = i * 2 * Math.PI / n;
+    return `M${(cx + r1 * Math.cos(a)).toFixed(1)} ${(cy + r1 * Math.sin(a)).toFixed(1)}L${(cx + r2 * Math.cos(a)).toFixed(1)} ${(cy + r2 * Math.sin(a)).toFixed(1)}`;
+  }).join(''),
+});
+
+ANIMALS.push(
+  /* ------------------------------------------------- FLAMINGO (Little Artist) */
+  {
+    id: 'flamingo', name: 'Flamingo', emoji: '🦩',
+    levels: {
+      easy: { view: '30 30 360 390', steps: [
+        { say: 'Draw a big egg shape lying down. This is the body.', s: [{ d: 'M150 200C150 160 200 140 260 150C310 158 330 190 320 215C305 245 250 255 200 245C170 238 150 225 150 200Z' }] },
+        { say: 'Draw a little circle high up for the head.', s: [{ c: [150, 72, 22] }] },
+        { say: 'Draw the long bendy neck with two lines, from the body up to the head.', s: [{ d: 'M156 178C122 150 116 118 139 91' }, { d: 'M177 159C148 140 142 116 161 91' }] },
+        { say: 'Draw the beak bending down, with a dark tip.', s: [{ d: 'M130 64C112 64 100 76 98 96C108 88 118 82 131 81' }, { d: 'M98 96C99 88 102 82 107 79L112 85C106 88 102 91 98 96Z', f: 1 }] },
+        { say: 'Draw the eye with a little shine.', s: [{ c: [153, 66, 5], f: 1 }, { c: [154.5, 64.5, 1.8], f: 'w' }] },
+        { say: 'Draw the wing on the body, with a wavy bottom like feathers.', s: [{ d: 'M195 175C230 155 290 165 312 200C300 208 290 210 282 206C272 214 260 214 252 208C242 216 228 214 220 208C210 212 198 205 195 175' }] },
+        { say: 'Add pointy tail feathers at the back.', s: [{ d: 'M318 186L356 184L334 200L358 212L320 214' }] },
+        { say: 'Draw one long straight leg, and one leg bent up like the letter Z. Flamingos stand on one leg!', s: [{ d: 'M225 248L225 380' }, { d: 'M245 248L252 300L214 288' }, { c: [225, 314, 4] }] },
+        { say: 'Draw the webbed foot at the bottom.', s: [{ d: 'M225 380C210 384 200 390 196 395L254 395C250 390 240 384 225 380Z' }] },
+        { say: 'Finish with little waves of water around the foot.', s: [{ d: 'M70 402q15 -8 30 0t30 0t30 0M270 402q15 -8 30 0t30 0t30 0M110 418q15 -8 30 0t30 0M240 418q15 -8 30 0t30 0' }] },
+      ] },
+    },
+  },
+
+  /* -------------------------------------------------- UNICORN (Little Artist) */
+  {
+    id: 'unicorn', name: 'Unicorn', emoji: '🦄',
+    levels: {
+      easy: { steps: [
+        { say: 'Draw the head, with a round nose at the bottom.', s: [{ d: 'M120 90C150 75 185 90 185 125C185 150 170 165 150 175C130 188 100 192 82 180C66 170 70 150 85 140C95 132 100 110 120 90Z' }] },
+        { say: 'Add a pointy ear and the magic horn on top!', s: [{ d: 'M162 88L178 56L177 99' }, { d: 'M124 88L112 22L136 85' }] },
+        { say: 'Draw little stripes on the horn to make it twisty.', s: [{ d: 'M121 72L130 68M118.5 57L124.5 54M115.5 41L118.8 39.5', w: 4 }] },
+        { say: 'Draw a big eye with a shine, a nostril and a smile.', s: [{ e: [145, 122, 7, 9], f: 1 }, { c: [147, 118, 2.5], f: 'w' }, { d: 'M138 112l-4 -6M144 111l0 -7M150 112l4 -6', w: 3 }, { c: [86, 164, 3.5], f: 1 }, { d: 'M90 182q10 5 20 -2', w: 4 }] },
+        { say: 'Draw the neck with two lines going down.', s: [{ d: 'M150 175C158 190 162 205 165 216' }, { d: 'M183 139C200 160 208 180 215 197' }] },
+        { say: 'Draw the curly mane along the back of the neck.', s: [{ d: 'M180 100C205 96 212 116 200 124C224 124 226 146 210 152C234 154 234 176 218 180C238 186 236 198 226 199' }] },
+        { say: 'Draw a big oval for the body.', s: [{ e: [240, 250, 95, 55] }] },
+        { say: 'Draw four legs, like long rectangles.', s: [{ d: 'M168 286L168 362L186 362L186 295M206 301L206 362L224 362L224 304M262 303L262 362L280 362L280 300M300 293L300 362L318 362L318 281' }] },
+        { say: 'Draw a line across each leg for the hooves.', s: [{ d: 'M168 348L186 348M206 348L224 348M262 348L280 348M300 348L318 348', w: 4 }] },
+        { say: 'Draw a big curly tail.', s: [{ d: 'M333 238C372 228 384 262 362 276C384 288 376 314 350 314C362 302 354 290 340 292C350 280 346 266 334 262' }] },
+        { say: 'Add some magic stars around your unicorn!', s: [star(330, 70, 18), star(60, 250, 12), star(285, 130, 9)] },
+      ] },
+    },
+  },
+
+  /* ----------------------------------------------------- TREE (Little Artist) */
+  {
+    id: 'tree', name: 'Apple Tree', emoji: '🌳',
+    levels: {
+      easy: { steps: [
+        { say: 'Draw a big fluffy cloud shape for the leaves.', s: [{ sc: [200, 160, 110, 13] }] },
+        { say: 'Draw little bumpy lines inside, to show bunches of leaves.', s: [{ d: 'M140 150q15 -18 30 0M220 120q15 -18 30 0M170 210q15 -18 30 0M240 190q15 -18 30 0M120 210q15 -18 30 0', w: 4 }] },
+        { say: 'Draw the trunk with two lines going down.', s: [{ d: 'M182 268C186 320 184 350 178 380M218 268C214 320 216 350 222 380' }] },
+        { say: 'Draw the roots spreading out, and the ground.', s: [{ d: 'M178 380C168 386 155 390 140 393M222 380C232 386 245 390 260 393M50 394L350 394' }] },
+        { say: 'Draw a hole in the trunk and some lines for the bark.', s: [{ e: [200, 318, 8, 12] }, { d: 'M190 286l3 16M208 340l-2 18M193 352l2 14', w: 3.5 }] },
+        { say: 'Draw round apples in the tree.', s: [{ c: [155, 105, 9] }, { c: [280, 140, 9] }, { c: [205, 160, 9] }, { c: [275, 215, 9] }, { c: [115, 175, 9] }, { c: [215, 235, 9] }] },
+        { say: 'Give each apple a little stem.', s: [{ d: 'M155 96l2 -7M280 131l2 -7M205 151l2 -7M275 206l2 -7M115 166l2 -7M215 226l2 -7', w: 3.5 }] },
+        { say: 'Draw grass and two little flowers.', s: [{ d: 'M70 394l-4 -12M76 394l2 -14M82 394l6 -10M318 394l-4 -12M324 394l2 -14M330 394l6 -10', w: 3.5 }, { sc: [108, 374, 8, 6] }, { c: [108, 374, 3], f: 1 }, { d: 'M108 382L108 394' }, { sc: [292, 374, 8, 6] }, { c: [292, 374, 3], f: 1 }, { d: 'M292 382L292 394' }] },
+        { say: 'Finish with a shining sun in the corner!', s: [{ c: [348, 52, 20] }, sunRays(348, 52, 28, 40)] },
+      ] },
+    },
+  },
+
+  /* ------------------------------------------------ HORSE ✨ (Master only) */
+  {
+    id: 'horse', name: 'Horse', emoji: '🐴',
+    levels: {
+      pro: { view: '0 10 420 390', steps: [
+        { say: 'Press very lightly! Sketch a circle for the chest, a circle for the back hips, a small circle for the head, and the ground line.',
+          s: [{ g: 1, c: [150, 205, 50] }, { g: 1, c: [305, 200, 55] }, { g: 1, e: [66, 120, 38, 48] }, { g: 1, d: 'M85 100L170 160M40 364L380 364' }] },
+        { say: 'Draw the long head: from the cheek, round the jaw, along to the soft nose, then up the long straight face to the top.',
+          s: [{ d: 'M104 128C108 148 98 160 82 166C70 172 58 180 44 180C32 180 24 172 26 162L58 86C66 70 82 60 98 60' }] },
+        { say: 'Add a pointy ear at the top of the head.', s: [{ d: 'M94 62L102 34L112 62' }] },
+        { say: 'Draw the strong curved neck with two lines.', s: [{ d: 'M98 60C135 70 160 110 175 150' }, { d: 'M104 128C110 150 112 182 108 200' }] },
+        { say: 'Draw the back: a gentle dip, then up and round over the hips.', s: [{ d: 'M175 150C200 160 230 162 260 156C285 150 305 144 325 150C345 156 355 172 356 190' }] },
+        { say: 'Draw the chest and the front leg, with a little hoof at the bottom.',
+          s: [{ d: 'M108 200C104 218 108 232 118 245C128 262 135 280 138 300L140 342C142 350 142 356 140 364L166 364C164 358 162 352 162 345L162 305C162 290 165 275 170 258' }] },
+        { say: 'Draw the belly, then the back leg. It bends backwards at the middle, like a big Z.',
+          s: [{ d: 'M170 258C210 268 260 268 290 262C300 275 312 290 318 310L326 342C328 350 326 356 326 364L352 364C348 358 346 352 345 345L338 305C335 290 335 275 340 260C350 240 358 215 356 190' }] },
+        { say: 'Draw the other two legs behind, with softer lines.',
+          s: [{ d: 'M178 262L184 300L188 342C190 350 190 356 192 362L212 362C210 356 208 350 208 344L200 300L196 264', t: 1 }, { d: 'M270 266C276 285 280 300 284 318L292 346C294 352 294 357 296 362L316 362C312 356 310 352 310 345L304 316', t: 1 }] },
+        { say: 'Now gently erase your light guide lines.', erase: 1, s: [] },
+        { say: 'Draw the eye, the nostril and the mouth.',
+          s: [{ d: 'M64 100C68 94 77 94 81 100C77 105 68 105 64 100Z', f: 1 }, { c: [75, 98, 1.7], f: 'w' }, { d: 'M38 150C32 155 32 162 37 166M28 172C34 175 42 175 48 172', w: 3.5 }] },
+        { say: 'Draw the flowing mane with long wavy strands, and a little forelock between the ears.',
+          s: [{ d: 'M100 66C112 78 112 90 106 100M114 72C126 86 126 100 118 110M128 82C140 98 140 112 132 122M142 96C154 112 154 126 146 136M156 114C166 128 166 140 160 150M98 62C90 70 86 78 88 88', w: 3.5 }] },
+        { say: 'Draw a long, flowing tail with a few hair lines inside.',
+          s: [{ d: 'M354 172C380 180 392 220 388 260C386 290 378 310 372 325C368 300 366 280 360 262' }, { d: 'M366 192C376 222 378 258 374 290M360 210C366 236 368 252 366 270', w: 2.5, t: 1 }] },
+        { say: 'Add muscle lines: the cheek, the shoulder, the hip, and the knees.',
+          s: [{ d: 'M102 126C94 108 80 104 70 112M150 175C140 200 140 225 152 245M300 170C285 190 285 215 300 235M138 300q8 -5 16 0M318 306q8 -5 16 0M140 350L164 350M326 350L350 350', w: 2.5, t: 1 }] },
+        { say: 'Shading time! Shade the whole horse very lightly.',
+          s: [{ sh: 1, d: 'M44 180C32 180 24 172 26 162L58 86C66 70 82 60 98 60C135 70 160 110 175 150C200 160 230 162 260 156C285 150 305 144 325 150C345 156 355 172 356 190C358 215 350 240 340 260C335 275 335 290 338 305L345 345C346 352 348 358 352 364L326 364C326 356 328 350 326 342L318 310C312 290 300 275 290 262C260 268 210 268 170 258C165 275 162 290 162 305L162 345C162 352 164 358 166 364L140 364C142 356 142 350 140 342L138 300C135 280 128 262 118 245C108 232 104 218 108 200C112 182 110 150 104 128C108 148 98 160 82 166C70 172 58 180 44 180Z' }] },
+        { say: 'Shade a bit darker under the belly, under the neck, and on the legs behind.',
+          s: [{ sh: 2, d: 'M170 258C210 268 260 268 290 262C280 250 250 245 210 245C190 245 178 250 170 258Z' }, { sh: 2, d: 'M104 128C110 150 112 182 108 200C118 180 118 150 112 132Z' },
+            { sh: 2, d: 'M178 262L184 300L188 342C190 350 190 356 192 362L212 362C210 356 208 350 208 344L200 300L196 264Z' }, { sh: 2, d: 'M270 266C276 285 280 300 284 318L292 346C294 352 294 357 296 362L316 362C312 356 310 352 310 345L304 316L290 262Z' }] },
+        { say: 'Last step: shade the mane, the tail and the lower legs really dark, and add a shadow on the ground. Magnificent!',
+          s: [{ sh: 3, d: 'M98 60C135 70 160 110 175 150C166 140 156 140 160 150C150 136 146 136 146 136C140 124 132 122 132 122C122 110 118 110 118 110C108 100 106 100 106 100C110 88 102 66 98 60Z' },
+            { sh: 3, d: 'M354 172C380 180 392 220 388 260C386 290 378 310 372 325C368 300 366 280 360 262C358 240 358 200 354 172Z' },
+            { sh: 3, d: 'M138 320L140 342C142 350 142 356 140 364L166 364C164 358 162 352 162 345L162 320Z' }, { sh: 3, d: 'M321 320L326 342C328 350 326 356 326 364L352 364C348 358 346 352 345 345L340 320Z' },
+            { sh: 1, e: [245, 367, 150, 7] }] },
+      ] },
+    },
+  },
+);

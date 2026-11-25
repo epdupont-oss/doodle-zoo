@@ -27,9 +27,14 @@
   function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
   const profile = id => state.profiles.find(p => p.id === id);
 
-  /* ---------- unlocking: animals open one after the other ---------- */
-  function isUnlocked(p, i) { return i === 0 || p.done.includes(ANIMALS[i - 1].id); }
-  function nextIndex(p) { return ANIMALS.findIndex((a, i) => isUnlocked(p, i) && !p.done.includes(a.id)); }
+  /* ---------- every animal is open; stars show what each child has drawn ---------- */
+  // Some animals only have one level (e.g. Unicorn is Little Artist only): use the closest one.
+  function levelKey(p, a) {
+    if (a.levels[p.level]) return p.level;
+    return ['easy', 'hard'].find(k => a.levels[k]);
+  }
+  const regularAnimals = () => ANIMALS.filter(a => a.levels.easy || a.levels.hard);
+  const masterAnimals = () => ANIMALS.filter(a => a.levels.pro);
 
   /* ---------- geometry ---------- */
   const f = n => +n.toFixed(1);
@@ -139,7 +144,7 @@
             <span class="avatar" style="background:${p.color}">${p.avatar}</span>
             <span>
               <div class="name">${esc(p.name)}</div>
-              <div class="meta">⭐ ${regularDone(p)} of ${ANIMALS.length} animals · ${LEVELS[p.level]}</div>
+              <div class="meta">⭐ ${regularDone(p)} of ${regularAnimals().length} drawn${masterDone(p) ? ` · ✨ ${masterDone(p)}` : ''} · ${LEVELS[p.level]}</div>
             </span>
           </button>`).join('')}
       </div>
@@ -151,7 +156,6 @@
   function renderZoo() {
     keepAwake(false);
     const p = profile(view.pid);
-    const ni = nextIndex(p);
     app.innerHTML = `
       <div class="bar">
         <button class="icon-btn" data-act="home" aria-label="Back">◀</button>
@@ -160,15 +164,13 @@
       </div>
       <div class="grid">
         ${ANIMALS.map((a, i) => {
-          if (!isUnlocked(p, i)) {
-            return `<div class="tile locked"><div class="lock">🔒</div><div class="label">???</div></div>`;
-          }
+          const k = levelKey(p, a);
+          if (!k) return '';
           const done = p.done.includes(a.id);
-          const lvl = a.levels[p.level];
           return `
-            <button class="tile ${i === ni ? 'next' : ''}" data-i="${i}">
-              ${done ? '<span class="badge star">⭐</span>' : '<span class="badge">NEW</span>'}
-              ${drawingSVG(lvl, 99, -1, 'thumb' + (done ? '' : ' old'))}
+            <button class="tile" data-i="${i}">
+              ${done ? '<span class="badge star">⭐</span>' : ''}
+              ${drawingSVG(a.levels[k], 99, -1, 'thumb')}
               <div class="label">${a.emoji} ${a.name}</div>
             </button>`;
         }).join('')}
@@ -181,9 +183,10 @@
       go({ screen: 'draw', pid: p.id, ai: +b.dataset.m, step: 0, lv: 'pro' }));
   }
 
-  /* Master drawings: a realistic version, unlocked once the normal animal is done. */
-  const showMaster = p => p.master ?? p.level === 'hard';
+  /* Master drawings: realistic versions with guide lines and shading. */
+  const showMaster = p => p.master ?? true;
   const regularDone = p => p.done.filter(d => !d.includes(':')).length;
+  const masterDone = p => p.done.filter(d => d.endsWith(':pro')).length;
   function masterSection(p) {
     return `
       <h2 class="section">✨ Master drawings</h2>
@@ -192,14 +195,10 @@
         ${ANIMALS.map((a, i) => {
           if (!a.levels.pro) return '';
           const lvl = a.levels.pro;
-          if (!p.done.includes(a.id)) {
-            return `<div class="tile locked"><div class="teaser">${drawingSVG(lvl, 99, -1, 'thumb')}<span>🔒</span></div>
-              <div class="hint">Draw the ${a.name} first</div></div>`;
-          }
           const done = p.done.includes(a.id + ':pro');
           return `
             <button class="tile" data-m="${i}">
-              ${done ? '<span class="badge star">⭐</span>' : '<span class="badge">NEW</span>'}
+              ${done ? '<span class="badge star">⭐</span>' : ''}
               ${drawingSVG(lvl, 99, -1, 'thumb')}
               <div class="label">✨ ${a.name}</div>
             </button>`;
@@ -212,7 +211,7 @@
     const p = profile(view.pid);
     const a = ANIMALS[view.ai];
     const pro = view.lv === 'pro';
-    const lvl = a.levels[pro ? 'pro' : p.level];
+    const lvl = a.levels[pro ? 'pro' : levelKey(p, a)];
     const doneId = pro ? a.id + ':pro' : a.id;
     const n = lvl.steps.length;
     const st = lvl.steps[view.step];
@@ -260,23 +259,20 @@
     const p = profile(view.pid);
     const a = ANIMALS[view.ai];
     const pro = view.lv === 'pro';
-    const lvl = a.levels[pro ? 'pro' : p.level];
-    const nextA = ANIMALS[view.ai + 1];
-    const unlocked = view.firstTime && !pro && nextA;
-    const masterNew = view.firstTime && !pro && a.levels.pro && showMaster(p);
+    const lvl = a.levels[pro ? 'pro' : levelKey(p, a)];
+    const masterTip = !pro && a.levels.pro && showMaster(p);
     app.innerHTML = `
       <div class="done-screen">
         <div class="stars">⭐⭐⭐</div>
         <h2>You drew a ${a.name}!</h2>
         <p>${pro ? 'What a real work of art! 🖼️' : 'Now color it in on your paper 🖍️'}</p>
         <div class="canvas">${drawingSVG(lvl, 99)}</div>
-        ${unlocked ? `<p style="margin-top:14px">🎁 A new animal is waiting in your zoo!</p>` : ''}
-        ${masterNew ? `<p>✨ The Master ${a.name} is now open too!</p>` : ''}
+        ${masterTip ? `<p style="margin-top:14px">✨ Want a challenge? Try the Master ${a.name}!</p>` : ''}
         <div class="controls">
           <button class="btn primary go" data-act="zoo">Back to my zoo</button>
         </div>
       </div>`;
-    const msg = `Well done ${p.name}! You drew a ${a.name}. Now color it in!` + (unlocked ? ' A new animal is waiting in your zoo.' : '');
+    const msg = `Well done ${p.name}! You drew a ${a.name}. Now color it in!` ;
     if (p.speak) speak(msg);
     confetti();
     app.querySelector('[data-act=zoo]').onclick = () => go({ screen: 'zoo', pid: p.id });
@@ -349,16 +345,15 @@
                 <button data-master="0" class="${!showMaster(p) ? 'on' : ''}">Hide</button>
               </div>
             </div>
-            <div class="row">Progress: ${regularDone(p)} / ${ANIMALS.length}
-              <span>
-                <button class="small-btn" data-act="unlock">Unlock all</button>
-                <button class="small-btn danger" data-act="reset">Reset</button>
-              </span>
+            <div class="row">Stars: ${regularDone(p)} / ${regularAnimals().length}, Master ${masterDone(p)} / ${masterAnimals().length}
+              <button class="small-btn danger" data-act="reset">Clear stars</button>
             </div>
           </div>`).join('')}
         <p class="note">Little Artist: fewer, bigger shapes (about ages 4–6).<br>
           Big Artist: more steps and details (about ages 7–10).<br>
-          Progress is saved on this phone only.</p>
+          Every animal can be chosen by every child. Animals made for one level only
+          (like the Unicorn) use that level for everyone.<br>
+          Stars are saved on this phone only.</p>
       </div>`;
     app.querySelector('[data-act=home]').onclick = () => go({ screen: 'home' });
     app.querySelectorAll('.panel').forEach(panel => {
@@ -367,11 +362,8 @@
       panel.querySelectorAll('[data-level]').forEach(b => b.onclick = () => { p.level = b.dataset.level; save(); render(); });
       panel.querySelectorAll('[data-master]').forEach(b => b.onclick = () => { p.master = b.dataset.master === '1'; save(); render(); });
       panel.querySelectorAll('[data-speak]').forEach(b => b.onclick = () => { p.speak = b.dataset.speak === '1'; save(); render(); });
-      panel.querySelector('[data-act=unlock]').onclick = () => {
-        if (confirm(`Mark all animals as done for ${p.name}?`)) { p.done = ANIMALS.map(a => a.id); save(); render(); }
-      };
       panel.querySelector('[data-act=reset]').onclick = () => {
-        if (confirm(`Start ${p.name}'s zoo again from the first animal?`)) { p.done = []; save(); render(); }
+        if (confirm(`Clear all of ${p.name}'s stars?`)) { p.done = []; save(); render(); }
       };
     });
   }
