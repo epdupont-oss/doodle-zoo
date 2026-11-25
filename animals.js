@@ -700,3 +700,124 @@ ANIMALS.push(
     },
   },
 );
+
+/* =====================================================================
+   MORE MASTER DRAWINGS ✨ (Fish, Turtle, Lion)
+   ===================================================================== */
+/** Flame-shaped mane tufts around a centre, swirling a little. */
+function maneTufts(cx, cy, r1, r2, n) {
+  const P = (r, a) => `${(cx + r * Math.cos(a)).toFixed(1)} ${(cy + r * Math.sin(a)).toFixed(1)}`;
+  const st = 2 * Math.PI / n;
+  let d = `M${P(r1, 0)}`;
+  for (let i = 0; i < n; i++) {
+    const a = i * st;
+    d += `Q${P(r2 * 0.95, a + st * 0.15)} ${P(r2, a + st * 0.7)}Q${P(r1 * 1.08, a + st * 0.75)} ${P(r1, a + st)}`;
+  }
+  return { d: d + 'Z' };
+}
+const FISH_BODY = 'M80 205C110 160 190 140 250 155C280 162 300 175 312 190L312 226C295 245 250 265 190 262C130 258 95 235 80 205Z';
+const FISH_SPOTS = [[175, 182, 7], [205, 176, 4], [232, 180, 8], [262, 184, 4], [288, 196, 5], [172, 202, 3], [198, 205, 9], [228, 210, 5], [256, 210, 8], [283, 216, 4], [212, 238, 4], [240, 238, 7], [268, 232, 5], [158, 186, 3], [300, 207, 3], [226, 254, 3]];
+const MASTER2 = {
+  /* ----------------------------------------------------------- FISH ✨ */
+  fish: { view: '20 40 390 360', steps: [
+    { say: 'Press very lightly! Sketch a long oval for the body and a line through the middle, from the nose to the tail.',
+      s: [{ g: 1, e: [196, 208, 118, 58] }, { g: 1, d: 'M60 208L395 208' }] },
+    { say: 'Draw the body: start at the pointy nose, round over the back to the tail, then round under the belly back to the nose. Leave the tail end open.',
+      s: [{ d: 'M312 190C300 175 280 162 250 155C190 140 110 160 80 205C95 235 130 258 190 262C250 265 295 245 312 226' }, { d: 'M80 205C90 212 100 214 112 210', w: 4 }] },
+    { say: 'Draw a big round tail fan at the back, like a hand fan.',
+      s: [{ d: 'M312 190C330 170 350 150 372 140C396 165 400 255 372 280C350 268 330 248 312 226' }] },
+    { say: 'Draw the tall fin on the back. It curves up to a point, then comes straight down.',
+      s: [{ d: 'M185 148C212 132 236 102 250 74C262 96 262 130 256 157' }] },
+    { say: 'Draw the fin under the belly, and the small side fin behind the head.',
+      s: [{ d: 'M200 261C210 282 226 296 244 302C250 286 252 270 248 256' }, { d: 'M150 222Q172 206 194 216Q186 226 194 236Q176 238 182 250Q160 244 150 222Z' }] },
+    { say: 'Draw the gill line, a curve behind the head, and a round eye with a ring around it.',
+      s: [{ d: 'M142 166C158 192 158 228 140 252' }, { c: [116, 192, 12], w: 4 }, { c: [116, 192, 6], f: 1 }, { c: [118, 190, 2], f: 'w' }] },
+    { say: 'Now gently erase your light guide lines.', erase: 1, s: [] },
+    { say: 'Draw thin lines in all the fins, spreading out like rays.',
+      s: [{ d: 'M318 202L372 152M318 207L386 180M318 211L392 212M318 215L386 244M318 220L372 268M212 140L246 88M228 150L252 96M242 155L256 112M210 266L238 296M222 264L244 292M234 262L247 282M160 224L190 220M164 232L188 232M168 240L182 246', w: 2.5, t: 1 }] },
+    { say: 'Draw lots of spots on the body, some big and some small. Fill them in dark.',
+      s: FISH_SPOTS.map(([x, y, r]) => ({ c: [x, y, r], f: 1 })) },
+    { say: 'Leave a tiny white shine in the biggest spots, and draw a thin line along the side of the fish.',
+      s: [...FISH_SPOTS.filter(s => s[2] >= 7).map(([x, y, r]) => ({ c: [x - r * 0.3, y - r * 0.3, r * 0.35], f: 'w' })), { d: 'M150 200C200 196 260 198 308 206', w: 2, t: 1 }] },
+    { say: 'Draw bubbles coming up from the mouth: a big one, a middle one and a little one.',
+      s: [{ c: [92, 92, 30] }, { c: [150, 140, 18] }, { c: [80, 160, 9] }] },
+    { say: 'Shading time! Shade the whole fish very lightly.', s: [{ sh: 1, d: FISH_BODY }] },
+    { say: 'Shade darker along the back and under the belly, so the fish looks round. Keep the middle light!',
+      s: [{ sh: 1, d: 'M80 205C110 160 190 140 250 155C280 162 300 175 312 190L312 196C280 180 220 168 160 176C120 182 96 196 80 205Z' },
+        { sh: 2, d: 'M80 205C95 235 130 258 190 262C250 265 295 245 312 226L312 220C280 236 230 248 180 244C130 240 100 226 80 205Z' }] },
+    { say: 'Shade the fins and the tail, darker near the body.',
+      s: [{ sh: 2, d: 'M312 190C330 170 350 150 372 140C396 165 400 255 372 280C350 268 330 248 312 226Z' }, { sh: 2, d: 'M185 148C212 132 236 102 250 74C262 96 262 130 256 157C230 150 205 146 185 148Z' },
+        { sh: 2, d: 'M200 261C210 282 226 296 244 302C250 286 252 270 248 256C232 260 216 262 200 261Z' }, { sh: 2, d: 'M150 222Q172 206 194 216Q186 226 194 236Q176 238 182 250Q160 244 150 222Z' },
+        { sh: 1, d: 'M312 190L312 226C320 215 322 200 312 190Z' }] },
+    { say: 'Last step: shade the bubbles, and leave a little white shine on each one. A real master fish!',
+      s: [{ sh: 2, c: [92, 92, 30] }, { sh: 2, c: [150, 140, 18] }, { sh: 3, c: [80, 160, 9] }, { c: [82, 80, 7], f: 'w' }, { c: [144, 133, 4], f: 'w' }] },
+  ] },
+
+  /* --------------------------------------------------------- TURTLE ✨ */
+  turtle: { view: '10 50 400 330', steps: [
+    { say: 'Press lightly! Sketch half a big oval for the shell, a small circle for the head, and the ground line.',
+      s: [{ g: 1, d: 'M50 232A135 125 0 0 1 320 232Z' }, { g: 1, c: [372, 168, 24] }, { g: 1, d: 'M30 300L400 300' }] },
+    { say: 'Draw the tall, round shell like a dome.', s: [{ d: 'M60 230C66 150 130 106 190 106C255 106 312 150 318 230' }] },
+    { say: 'Draw the rim of the shell: a thick band along the bottom.', s: [{ d: 'M50 230L330 230C334 244 324 252 312 252L68 252C56 252 46 244 50 230Z' }] },
+    { say: 'Draw the head and the long neck coming out of the shell.',
+      s: [{ d: 'M318 205C334 190 344 178 350 166C358 148 384 146 394 160C402 174 396 188 384 193C368 199 352 214 336 240' }] },
+    { say: 'Draw the front leg and the back leg, thick and strong, with little toes.',
+      s: [{ d: 'M278 252C282 272 286 288 288 300L318 300C314 286 308 270 304 252' }, { d: 'M290 300q4 -6 8 0q4 -6 8 0q4 -6 8 0', w: 3.5 },
+        { d: 'M92 252C90 270 88 286 84 300L114 300C114 286 118 270 120 252' }, { d: 'M86 300q4 -6 8 0q4 -6 8 0q4 -6 8 0', w: 3.5 }] },
+    { say: 'Draw the two legs on the other side with softer lines, and a little pointy tail.',
+      s: [{ d: 'M228 252L232 292L254 292L252 252M138 252L136 290L158 290L160 252', t: 1 }, { d: 'M50 238L28 250L54 248' }] },
+    { say: 'Draw the eye with a shine, a little brow, the nostril and the mouth.',
+      s: [{ c: [374, 164, 5], f: 1 }, { c: [375.5, 162.5, 1.8], f: 'w' }, { d: 'M366 156q8 -6 16 0', w: 3 }, { c: [394, 166, 1.8], f: 1 }, { d: 'M397 176C390 182 380 183 370 180', w: 3.5 }] },
+    { say: 'Now gently erase your light guide lines.', erase: 1, s: [] },
+    { say: 'Draw a big six-sided plate in the middle of the shell.', s: [{ d: 'M160 136L216 136L236 168L216 200L160 200L140 168Z' }] },
+    { say: 'Draw lines from each corner out to the edge of the shell, to make more plates.',
+      s: [{ d: 'M160 136L142 112M216 136L236 112M236 168L300 160M216 200L240 230M160 200L138 230M140 168L74 168M74 168L90 230M300 160L292 230' }] },
+    { say: 'Draw smaller shapes inside each plate, and short lines dividing the rim.',
+      s: [{ d: 'M172 150L206 150L218 168L206 186L172 186L160 168Z', w: 2.5, t: 1 }, { d: 'M90 230L90 252M120 230L120 252M150 230L150 252M180 230L180 252M210 230L210 252M240 230L240 252M270 230L270 252M300 230L300 252', w: 3 }] },
+    { say: 'Add little scales on the head, neck and legs: tiny circles and dots.',
+      s: [{ d: 'M352 180a4 4 0 1 0 0.1 0M340 200a4 4 0 1 0 0.1 0M290 270a4 4 0 1 0 0.1 0M298 286a3 3 0 1 0 0.1 0M100 270a4 4 0 1 0 0.1 0M106 286a3 3 0 1 0 0.1 0M382 154a3 3 0 1 0 0.1 0', w: 2.5, t: 1 }] },
+    { say: 'Shading time! Shade the whole shell lightly, and the plate edges a bit darker.',
+      s: [{ sh: 1, d: 'M60 230C66 150 130 106 190 106C255 106 312 150 318 230Z' }, { sh: 1, d: 'M60 230C66 150 130 106 190 106C150 120 110 160 96 230Z' }] },
+    { say: 'Shade the rim, the head, the neck and the legs.',
+      s: [{ sh: 2, d: 'M50 230L330 230C334 244 324 252 312 252L68 252C56 252 46 244 50 230Z' },
+        { sh: 1, d: 'M318 205C334 190 344 178 350 166C358 148 384 146 394 160C402 174 396 188 384 193C368 199 352 214 336 240L318 230Z' },
+        { sh: 1, d: 'M278 252C282 272 286 288 288 300L318 300C314 286 308 270 304 252Z' }, { sh: 1, d: 'M92 252C90 270 88 286 84 300L114 300C114 286 118 270 120 252Z' },
+        { sh: 2, d: 'M228 252L232 292L254 292L252 252Z' }, { sh: 2, d: 'M138 252L136 290L158 290L160 252Z' }] },
+    { say: 'Last step: a dark shadow under the shell and on the ground, and some grass. Slow and steady wins!',
+      s: [{ sh: 3, d: 'M68 252L312 252L304 262L80 262Z' }, { sh: 2, e: [200, 302, 170, 8] }, { d: 'M40 300l-3 -12M46 300l2 -14M52 300l5 -10M356 300l-3 -12M362 300l2 -14M368 300l5 -10', w: 3 }] },
+  ] },
+
+  /* ----------------------------------------------------------- LION ✨ */
+  lion: { view: '20 20 360 370', steps: [
+    { say: 'Press lightly! Sketch a circle for the head, a big circle around it for the mane, and a cross for the face.',
+      s: [{ g: 1, c: [200, 205, 90] }, { g: 1, c: [200, 200, 155] }, { g: 1, d: 'M200 110L200 300M110 195L290 195' }] },
+    { say: 'Draw the face: a wide forehead, round cheeks, and a narrow chin.',
+      s: [{ d: 'M200 120C250 120 282 146 286 188C290 232 266 272 236 292C222 301 210 305 200 305C190 305 178 301 164 292C134 272 110 232 114 188C118 146 150 120 200 120Z' }] },
+    { say: 'Draw two small round ears on top, with a curve inside.',
+      s: [{ d: 'M142 142C122 118 136 92 162 104C168 108 172 114 174 122' }, { d: 'M258 142C278 118 264 92 238 104C232 108 228 114 226 122' }, { d: 'M148 132C142 120 148 110 160 114M252 132C258 120 252 110 240 114', w: 3 }] },
+    { say: 'Draw the big wild mane all around, with pointy tufts like flames.',
+      s: [maneTufts(200, 200, 128, 168, 18)] },
+    { say: 'Draw the eyes: almond shapes with a round iris, a pupil and a shine.',
+      s: [{ d: 'M150 190C160 176 182 176 190 190C182 200 160 202 150 190Z' }, { d: 'M250 190C240 176 218 176 210 190C218 200 240 202 250 190Z' }, { c: [171, 189, 7], f: 1 }, { c: [229, 189, 7], f: 1 }, { c: [173, 186, 2.2], f: 'w' }, { c: [231, 186, 2.2], f: 'w' }] },
+    { say: 'Draw the strong brows above the eyes, and the nose: two lines going down to a wide nose.',
+      s: [{ d: 'M144 178C156 164 176 162 190 170M256 178C244 164 224 162 210 170', w: 4 }, { d: 'M190 200C188 212 184 222 178 230M210 200C212 212 216 222 222 230', w: 3, t: 1 }, { d: 'M176 230L224 230C224 242 212 250 200 252C188 250 176 242 176 230Z' }] },
+    { say: 'Draw the mouth below the nose, two round puffy cheeks, and the chin.',
+      s: [{ d: 'M200 252L200 262C192 278 168 280 158 264M200 262C208 278 232 280 242 264' }, { d: 'M180 290C192 296 208 296 220 290', w: 4 }] },
+    { say: 'Now gently erase your light guide lines.', erase: 1, s: [] },
+    { say: 'Draw whisker dots on the cheeks, and a few long whiskers.',
+      s: [{ c: [176, 262, 2], f: 1 }, { c: [168, 268, 2], f: 1 }, { c: [180, 272, 2], f: 1 }, { c: [224, 262, 2], f: 1 }, { c: [232, 268, 2], f: 1 }, { c: [220, 272, 2], f: 1 },
+        { d: 'M160 270C135 266 112 268 90 276M162 278C140 282 120 290 102 302M240 270C265 266 288 268 310 276M238 278C260 282 280 290 298 302', w: 2 }] },
+    { say: 'Draw lots of hair lines in the mane, going out from the face.',
+      s: [ringStrokes(200, 205, 100, 110, 0, 350, 36, 26), ringStrokes(200, 200, 130, 140, 5, 355, 36, 14)] },
+    { say: 'Shading time! Shade the whole face lightly. Keep the muzzle and chin light.',
+      s: [{ sh: 1, d: 'M200 120C250 120 282 146 286 188C290 232 266 272 236 292C222 301 210 305 200 305C190 305 178 301 164 292C134 272 110 232 114 188C118 146 150 120 200 120ZM200 252C188 250 176 242 176 230C166 240 150 250 156 266C164 282 190 282 200 262C210 282 236 282 244 266C250 250 234 240 224 230C224 242 212 250 200 252Z' }] },
+    { say: 'Shade the mane medium all around.',
+      s: [{ sh: 2, d: maneTufts(200, 200, 128, 168, 18).d + 'M200 120C150 120 118 146 114 188C110 232 134 272 164 292C178 301 190 305 200 305C210 305 222 301 236 292C266 272 290 232 286 188C282 146 250 120 200 120Z' }] },
+    { say: 'Shade darker where the mane meets the face, and inside the ears.',
+      s: [{ sh: 2, d: 'M200 120C250 120 282 146 286 188C290 232 266 272 236 292C222 301 210 305 200 305C190 305 178 301 164 292C134 272 110 232 114 188C118 146 150 120 200 120ZM200 106C260 106 302 140 304 190C306 245 270 292 238 310C222 318 210 322 200 322C190 322 178 318 162 310C130 292 94 245 96 190C98 140 140 106 200 106Z' },
+        { sh: 2, d: 'M148 132C142 120 148 110 160 114C166 118 168 124 170 128Z' }, { sh: 2, d: 'M252 132C258 120 252 110 240 114C234 118 232 124 230 128Z' }] },
+    { say: 'Last step: shade the nose very dark, and the brows. King of the jungle!',
+      s: [{ sh: 3, d: 'M176 230L224 230C224 242 212 250 200 252C188 250 176 242 176 230Z' }, { sh: 2, d: 'M144 178C156 164 176 162 190 170C176 168 158 170 144 178ZM256 178C244 164 224 162 210 170C224 168 242 170 256 178Z' }] },
+  ] },
+};
+for (const [id, level] of Object.entries(MASTER2)) ANIMALS.find(a => a.id === id).levels.pro = level;
